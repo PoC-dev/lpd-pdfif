@@ -1,0 +1,89 @@
+.TH PDFIF "1" "April 2021" "pdfif" "User Manuals"
+.SH NAME
+pdfif \- Infilter for LPD, outputting PDF in user's Home
+.SH SYNOPSIS
+.B pdfif
+[\fIOPTION\fR]...
+.SH DESCRIPTION
+This manual page
+documents
+.BR pdfif
+for converting print data to PDF.
+.B pdfif
+is intended as infilter in
+.B /etc/printcap
+for lpd.
+Thus it reads job data from stdin, and utilizes implicit command line options
+from
+.B lpd
+as well as configuration statements from
+.B /etc/pdfifrc
+to instruct how to properly process the input to a PDF file.
+.P
+Input data is written to a temporary file. Next, file(1) is run, so
+.B pdfif
+can decide which converter program to run. This is either gs(1) or gpcl(1).
+.P
+Conversion is output to a second temporary file. If the job was PCL
+data, pdftk(1) is applied to the output with
+.B cat 1-endwest
+to rotate jobs from IBM i systems correctly. Afterwards the file is
+moved to the calling user's home directory if it is resolvable and writeable.
+If the user cannot be found, the PDF file is moved to the home directory
+of the
+.B root
+user.
+.P
+To successfully process files, the
+.B file(1)
+program must be installed as well as
+.B gs(1)
+,
+.B gpcl(1)
+and
+.B pdftk(1) . pdfif
+tries to continue processing as complete as possible if the mentioned
+helper programs are not found. In general, it tries to avoid data loss
+to a great extent.
+.P
+To achieve maximum flexibility, this program should be installed setuid root,
+which might expose security issues in itself. You have been warned.
+.SH OPTIONS
+.TP
+\fB\-c\fR
+Pass control characters. Inherited from lpr. Ignored.
+.TP
+\fB\-w\fR
+Page width in characters. Passed from pw-Parameter in /etc/printcap.
+Ignored.
+.TP
+\fB\-l\fR
+Page length in characters. Passed from pl-Parameter in /etc/printcap.
+Ignored.
+.TP
+\fB\-i\fR
+Indentation. Ignored.
+.TP
+\fB\-j\fR
+Job- or filename.
+.TP
+\fB\-n\fR
+Login name of the user who submitted the job (on the remote machine).
+.TP
+\fB\-h\fR
+Host name from where the job was received.
+.TP
+\fB\--\fR
+The remaining argument would be the lpd accounting logfile but is ignored.
+.SH AUTHOR
+Written by Patrik Schindler.
+.SH "REPORTING BUGS"
+Mail to poc@pocnet.net.
+.SH COPYRIGHT
+Copyright \(co 2017, 2021 Patrik Schindler
+License GPLv2: GNU GPL version 2 or later <http://gnu.org/licenses/gpl.html>.
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+gs(1), gpcl(1), file(1), pdftk(1), printcap(5)
