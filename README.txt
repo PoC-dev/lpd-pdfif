@@ -42,7 +42,7 @@ all others are needed only needed for certain conversions.
 - file
 - ghostscript (only for PostScript input)
 - gpcl (only for PCL input)
-- pdfdk (only for certain PCL input)
+- pdftk (only for certain PCL input)
 
 Example /etc/printcap entry
 ===========================
@@ -68,10 +68,10 @@ man -t rmdir |lpr -P pdfwriter
 
 Set default printer
 ===================
-Edit /etc/enviconment and add a line:
+Edit /etc/environment and add a line:
 PRINTER=pdfwriter
 
 After logging out and back in again, the lp* commands will use "pdfwriter" as
 default printer.
 
-$Id: README.txt,v 1.2 2021/12/22 22:56:48 poc Exp $
+$Id: README.txt,v 1.3 2023/06/04 20:31:11 poc Exp $
