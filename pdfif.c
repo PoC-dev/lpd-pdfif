@@ -19,8 +19,6 @@
  * Place, Suite 330, Boston, MA  02111-1307  USA or get it at
  * http://www.gnu.org/licenses/gpl.html
  *
- * $Id: pdfif.c,v 1.6 2021/12/22 22:56:48 poc Exp $
- *
  */
 
 #include <ctype.h>

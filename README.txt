@@ -73,5 +73,3 @@ PRINTER=pdfwriter
 
 After logging out and back in again, the lp* commands will use "pdfwriter" as
 default printer.
-
-$Id: README.txt,v 1.3 2023/06/04 20:31:11 poc Exp $
