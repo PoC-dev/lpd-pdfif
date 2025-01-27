@@ -52,7 +52,7 @@
 #undef DEBUG
 
 /* --------------------------------------------------------------------------*/
-/* Convert string in *buf to lower case */
+/* Convert string in *buf to lower case. */
 
 int str2lcase(char *buf) {
     unsigned int    i;
@@ -351,3 +351,4 @@ int main(int argc, char *argv[]) {
 
 /* vi: tabstop=4 shiftwidth=4 autoindent expandtab
  *EOF */
+
