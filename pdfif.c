@@ -46,7 +46,7 @@
 #define DFT_USER "poc"
 
 /* Configuration file */
-#define CONFFILE "/etc/pdfifrc"
+#define CONFFILE "/etc/pdfif.conf"
 
 /* Enable debugging messages by defining DEBUG */
 #undef DEBUG

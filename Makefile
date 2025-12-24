@@ -17,23 +17,32 @@
 # Suite 330, Boston, MA 02111-1307 USA or get it at
 # http://www.gnu.org/licenses/gpl.html
 
-.PHONY: clean install install-man
+.PHONY: clean install uninstall install-bin install-man install-conf
 
 DESTDIR:=/usr/local
+
+install: install-bin install-man install-conf
+
+uninstall:
+	-rm -f $(DESTDIR)/lib/lpd/pdfif $(DESTDIR)/share/man/man1/pdfif.1 $(DESTDIR)/etc/pdfif.conf
+
+install-bin: pdfif
+	-mkdir -p $(DESTDIR)/lib/lpd
+	install -o root -g lp -m 4750 $< $(DESTDIR)/lib/lpd/
+
+install-man: pdfif.1
+	-mkdir -p $(DESTDIR)/share/man/man1
+	install -o root -g staff -m 0644 $< $(DESTDIR)/share/man/man1/
+
+install-conf: pdfif.conf
+	-mkdir -p $(DESTDIR)/etc
+	install -o root -g lp -m 0644 $< $(DESTDIR)/etc
 
 pdfif: pdfif.o
 	gcc -o $@ $<
 
 pdfif.o: pdfif.c
 	gcc -Wall -o $@ -c $<
-
-install: pdfif install-man
-	-mkdir -p $(DESTDIR)/lib/lpd
-	install -o root -g lp -m 4750 $< $(DESTDIR)/lib/lpd/ps2pdf
-
-install-man: pdfif.1
-	-mkdir -p $(DESTDIR)/share/man/man1/
-	install -o root -g staff -m 0644 $< $(DESTDIR)/share/man/man1/
 
 clean:
 	rm -f pdfif pdfif.o
