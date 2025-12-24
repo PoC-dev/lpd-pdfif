@@ -105,9 +105,8 @@ default printer.
 
 ## Bugs, current state.
 It's basically working, but it's crude. Many values are hard coded which should
-be read from a configuration file. Error recovery is minimal. Manpage isn't
-installed by default. I'm releasing it in it's current state because I think it
-could benefit some people anyway.
+be read from a configuration file. Error recovery is minimal. I'm releasing it
+in it's current state because I think it could benefit some people anyway.
 
 Patches to get rid of those FIXMEs in the code are welcome. Send by email to
 poc@pocnet.net, provide pull requests, or ask for write access to the
