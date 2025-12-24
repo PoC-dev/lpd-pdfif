@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
         if ( strncmp(popen_readbuf, "PostScript document text", 24) == 0 ) {
             is_pcl = 0;
             snprintf(extprog_call, BUFSIZE-1,
-                "/usr/bin/gs -P- -dSAFER -q -P- -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=%s -P- -dSAFER -c .setpdfwrite -f %s\n",
+                "/usr/bin/gs -P- -dSAFER -q -P- -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=%s -P- -dSAFER -f %s\n",
                 pdffile, tmpfile);
         } else if ( strncmp(popen_readbuf, "HP PCL printer data", 19) == 0 ) {
             is_pcl = 1;
