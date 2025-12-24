@@ -13,9 +13,9 @@ subject to the GNU Public License version 2.
 
 ## Rationale.
 For me, the main function is to get PDFs from spooled output of older versions
-of OS/400. PDF output was added considerably late, though a resource-intensive
-Java application which is also not exactly easy to configure or debug if it's
-not working.
+of OS/400. PDF output within was added considerably late, though a
+resource-intensive Java application which is also not exactly easy to configure
+or debug if it's not working.
 
 If you use the same username on Linux and OS/400, the username of the print job
 will also be used for determining the destination user on Linux.
@@ -26,14 +26,15 @@ the man page.
 **WARNING!** Because lpd runs as user `lp:lp`, the resulting printer filter
 binary must be installed setuid root, so it has write access to each user's
 home directory! The *Makefile* takes care about that. This might have possible
-security implications! I can't guarantee that the code as is free from possible
-security holes allowing for privilege elevation to root! **You have been
-warned!**
+security implications! I cannot guarantee that the code as is is free from
+possible security holes allowing for privilege elevation to root! **You have
+been warned!**
 
 ## Installation.
 Install *lpd* per instructions for your Linux distribution. **Note:** this
 might conflict with an already installed alternative printing system, such as
-CUPS. I can't provide general advice how to work around this.
+CUPS. I can't provide general advice how to work around this, or how to
+integrate my solution with CUPS.
 
 For easy compilation and installation of the filter program, a *Makefile* has
 been provided.
@@ -84,8 +85,9 @@ lpc restart pdfwriter
 
 **Note:** Depending on your distribution, *lpd* might have a startup parameter
 configuration file */etc/default/lpd*, which per default denies any network
-connections to lpd. If you want to submit print jobs from your network. In
-addition, you must add an entry per host to */etc/hosts.lpd*.
+connections to lpd. If you want to submit print jobs from your network,
+this configuration must be changed. In addition, you must add an entry per host
+to */etc/hosts.lpd*.
 
 ### Run a test print.
 ```
@@ -113,4 +115,4 @@ repository.
 
 ----
 
-2025-01-24 poc@pocnet.net
+2025-12-24 poc@pocnet.net
