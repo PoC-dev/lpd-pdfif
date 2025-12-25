@@ -33,6 +33,7 @@
 #include <libgen.h>
 #include <errno.h>
 #include <signal.h>
+#include <sys/signal.h>
 
 /* For nicer syslog output */
 #define SYSLOGNAME "pdfif"
@@ -40,6 +41,7 @@
 
 /* Various Buffers */
 #define BUFSIZE 10240
+#define CMDSIZE 20480
 
 /* This user receives output if user cannot be determined */
 /* FIXME: Make dynamic in configuration file. */
@@ -51,8 +53,12 @@
 /* Enable debugging messages by defining DEBUG */
 #undef DEBUG
 
-/* --------------------------------------------------------------------------*/
-/* Convert string in *buf to lower case. */
+/* Globals. */
+int exit_flag=0;
+
+/*------------------------------------------------------------------------------
+ * Convert string in *buf to lower case.
+ */
 
 int str2lcase(char *buf) {
     unsigned int    i;
@@ -64,24 +70,30 @@ int str2lcase(char *buf) {
     return(0);
 }
 
-/* --------------------------------------------------------------------------*/
+/*------------------------------------------------------------------------------
+ * What to do when we receive a SIGINT.
+ */
 
-/* FIXME: from printcap(5): we must not ignore SIGINT. */
+void set_exit_flag(int signum) {
+    exit_flag = 1;
+}
+
+/*----------------------------------------------------------------------------*/
 
 int main(int argc, char *argv[]) {
-    char            buf[BUFSIZE], popen_readbuf[BUFSIZE], extprog_call[BUFSIZE],
-                    dstfile_buf[BUFSIZE];
-    int             retval = 0, is_pcl;
-    char            *tmpfile, *pdffile, *lpuser, *lphost, *lpfile,
-                    optchar;
-    FILE            *tmpfd, *filecmdfp;
-    struct passwd   *dstUsrEntry;
+    struct sigaction termaction;
+    char buf[BUFSIZE], popen_readbuf[BUFSIZE], extprog_call[CMDSIZE],
+         dstfile_buf[BUFSIZE];
+    int retval = 0, is_pcl;
+    char *tmpfile, *pdffile, *lpuser, *lphost, *lpfile, optchar;
+    FILE *tmpfd, *filecmdfp;
+    struct passwd *dstUsrEntry;
 
 
     /* Initialize stuff */
     memset(buf,           '\0', BUFSIZE);
     memset(popen_readbuf, '\0', BUFSIZE);
-    memset(extprog_call,  '\0', BUFSIZE);
+    memset(extprog_call,  '\0', CMDSIZE);
     memset(dstfile_buf,   '\0', BUFSIZE);
     lpuser = lphost = lpfile = NULL;
 
@@ -128,6 +140,14 @@ int main(int argc, char *argv[]) {
             abort();
     }
 
+
+    /* Create signal handler for SIGINT.
+     * We currently only adhere to `man 5 printcap`; stating we must not
+     * ignore SIGINT.
+     */
+    memset(&termaction, 0, sizeof(struct sigaction));
+    termaction.sa_handler = set_exit_flag;
+    sigaction(SIGINT, &termaction, NULL);
 
     /* FIXME: Open Global config file and read stuff there into an array. */
 
@@ -204,7 +224,7 @@ int main(int argc, char *argv[]) {
      */
 
     /* What kind of data did we collect so far? */
-    snprintf(extprog_call, BUFSIZE-1, "/usr/bin/file -b %s\n", tmpfile);
+    snprintf(extprog_call, CMDSIZE-1, "/usr/bin/file -b %s\n", tmpfile);
     errno = 0;
     filecmdfp = popen(extprog_call, "r");
     if (filecmdfp == NULL) {
@@ -215,7 +235,7 @@ int main(int argc, char *argv[]) {
     }
     fgets(popen_readbuf, BUFSIZE-1, filecmdfp);
     pclose(filecmdfp);
-    memset(extprog_call, '\0', BUFSIZE);
+    memset(extprog_call, '\0', CMDSIZE);
 
     /* FIXME: Check if gs/gpcl programs exist/may be exec'd
      *        and if not pass input unconverted.
@@ -228,12 +248,12 @@ int main(int argc, char *argv[]) {
         /* Decide what to call, then use common aftermath */
         if ( strncmp(popen_readbuf, "PostScript document text", 24) == 0 ) {
             is_pcl = 0;
-            snprintf(extprog_call, BUFSIZE-1,
+            snprintf(extprog_call, CMDSIZE-1,
                 "/usr/bin/gs -P- -dSAFER -q -P- -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=%s -P- -dSAFER -f %s\n",
                 pdffile, tmpfile);
         } else if ( strncmp(popen_readbuf, "HP PCL printer data", 19) == 0 ) {
             is_pcl = 1;
-            snprintf(extprog_call, BUFSIZE-1,
+            snprintf(extprog_call, CMDSIZE-1,
                 "/usr/local/bin/gpcl -dSAFER -dNOPAUSE -dBATCH -sDEVICE=pdfwrite -sOutputFile=%s %s\n",
                 pdffile, tmpfile);
         }
@@ -250,13 +270,13 @@ int main(int argc, char *argv[]) {
         /* Cleanup */
         memset(buf,           '\0', BUFSIZE);
         memset(popen_readbuf, '\0', BUFSIZE);
-        memset(extprog_call,  '\0', BUFSIZE);
+        memset(extprog_call,  '\0', CMDSIZE);
 
 
         /* PDF must be rotated when input was PCL via standard PRTF on OS/400. */
         /* FIXME: This is a very specific requirement and should be made configurable. */
         if ( (strncmp(argv[0], "ps2pdf-rotate", 13)) == 0 ) {
-            snprintf(extprog_call, BUFSIZE-1,
+            snprintf(extprog_call, CMDSIZE-1,
                 "pdftk %s cat 1-endwest output %s.pdf; cat %s.pdf > %s; rm -f %s.pdf",
                 pdffile, pdffile, pdffile, pdffile, pdffile);
             errno = 0;
@@ -265,7 +285,7 @@ int main(int argc, char *argv[]) {
                 syslog(LOG_WARNING, "system(%s) returned %d, %s\n",
                     extprog_call, retval, strerror(errno));
             }
-            memset(extprog_call, '\0', BUFSIZE);
+            memset(extprog_call, '\0', CMDSIZE);
         }
 
 
@@ -311,7 +331,7 @@ int main(int argc, char *argv[]) {
                 pdffile, buf, strerror(errno));
             #endif
 
-            snprintf(extprog_call, BUFSIZE-1, "/bin/cp -a '%s' '%s'",
+            snprintf(extprog_call, CMDSIZE-1, "/bin/cp -a '%s' '%s'",
                 pdffile, buf);
 
             errno = 0;
@@ -336,7 +356,7 @@ int main(int argc, char *argv[]) {
     /* Cleanup */
     memset(buf,           '\0', BUFSIZE);
     memset(popen_readbuf, '\0', BUFSIZE);
-    memset(extprog_call,  '\0', BUFSIZE);
+    memset(extprog_call,  '\0', CMDSIZE);
     memset(dstfile_buf,   '\0', BUFSIZE);
 
     errno = 0;
@@ -349,6 +369,6 @@ int main(int argc, char *argv[]) {
     return(retval);
 }
 
-/* vi: tabstop=4 shiftwidth=4 autoindent expandtab
- *EOF */
-
+/*------------------------------------------------------------------------------
+ * vim: ft=c colorcolumn=81 autoindent shiftwidth=4 tabstop=4 expandtab
+ */
