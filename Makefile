@@ -21,6 +21,12 @@
 
 DESTDIR:=/usr/local
 
+pdfif: pdfif.o
+	gcc -o $@ $<
+
+pdfif.o: pdfif.c
+	gcc -Wall -o $@ -c $<
+
 install: install-bin install-man install-conf
 
 uninstall:
@@ -37,12 +43,6 @@ install-man: pdfif.1
 install-conf: pdfif.conf
 	-mkdir -p $(DESTDIR)/etc
 	install -o root -g lp -m 0644 $< $(DESTDIR)/etc
-
-pdfif: pdfif.o
-	gcc -o $@ $<
-
-pdfif.o: pdfif.c
-	gcc -Wall -o $@ -c $<
 
 clean:
 	rm -f pdfif pdfif.o
